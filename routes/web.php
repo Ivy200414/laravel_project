@@ -3,10 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Auth;
 
-// Public route
+// Public route - redirect to login
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/login');
 });
 
 // Auth routes
@@ -17,9 +18,6 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Protected routes
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    // Resource routes for products (only accessible when authenticated)
-    Route::resource('products', ProductController::class);
+    Route::resource('products', ProductController::class); // <— User lands here after login
 });

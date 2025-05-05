@@ -21,10 +21,16 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
-            return redirect('/dashboard');
+            $request->session()->regenerate(); // prevent session fixation
+            return redirect()->route('products.index'); // ✅ Redirect to products
         }
 
         return back()->withErrors(['email' => 'Invalid credentials']);
@@ -45,18 +51,17 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
+        $request->session()->regenerate();
 
-        return redirect('/dashboard');
+        return redirect()->route('products.index'); // ✅ Redirect to products
     }
 
-    public function dashboard()
-    {
-        return view('dashboard');
-    }
-
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect('/login');
     }
 }
