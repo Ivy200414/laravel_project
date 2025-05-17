@@ -29,7 +29,13 @@ class ProductController extends Controller
  public function store(StoreProductRequest $request) : 
 RedirectResponse
  {
- Product::create($request->validated());
+    $data = $request->validated();
+  
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('products', 'public');
+        $data['image'] = $imagePath;
+    }
+ Product::create($data);
  return redirect()->route('products.index')
  ->withSuccess('New product is added successfully.');
  }
@@ -53,7 +59,18 @@ RedirectResponse
  public function update(UpdateProductRequest $request, Product
 $product) : RedirectResponse
  {
- $product->update($request->validated());
+    $data = $request->validated();
+    // Handle file upload
+    if ($request->hasFile('image')) {
+        // Optionally delete old image here
+        $imagePath = $request->file('image')->store('products', 'public');
+        $data['image'] = $imagePath;
+    }else {
+        // If no new image is uploaded, keep the old one
+        $data['image'] = $product->image;
+    }
+
+ $product->update($data);
  return redirect()->back()
  ->withSuccess('Product is updated successfully.');
  }
@@ -65,6 +82,18 @@ $product) : RedirectResponse
  $product->delete();
  return redirect()->route('products.index')
  ->withSuccess('Product is deleted successfully.');
- }
+ 
+ // In store()
+if ($request->hasFile('image')) {
+    $imagePath = $request->file('image')->store('products', 'public');
+    $data['image'] = $imagePath;
+}
 
+// In update()
+if ($request->hasFile('image')) {
+    // Optionally delete old image here
+    $imagePath = $request->file('image')->store('products', 'public');
+    $data['image'] = $imagePath;
+}
+ }
 }
